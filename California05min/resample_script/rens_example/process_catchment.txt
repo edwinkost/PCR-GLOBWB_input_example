@@ -1,0 +1,41 @@
+beek0120@speedy:~/PCR-GLOBWB$ cp /data/hydroworld/PCRGLOBWB20/input5min/
+global/        groundwater/   hydeLandCover/ landCover/     landSurface/   meteo/         routing/
+beek0120@speedy:~/PCR-GLOBWB$ cp /data/hydroworld/PCRGLOBWB20/input5min/routing/
+avgDischargeIni_2005_12_31.map    channelStorageIni_2005_12_31.map  ldd/                              reservoirs/
+cellsize05min.correct.map         diagonal05min.correct.map         lddsound_05min.map                slope05min.map
+beek0120@speedy:~/PCR-GLOBWB$ cp /data/hydroworld/PCRGLOBWB20/input5min/routing/lddsound_05min.map .
+beek0120@speedy:~/PCR-GLOBWB$ aguila lddsound_05min.map
+beek0120@speedy:~/PCR-GLOBWB$ cp /data/hydroworld/PCRGLOBWB20/input5min/routing/cellsize05min.correct.map .
+beek0120@speedy:~/PCR-GLOBWB$ pcrcalc accu.map= "accuflux(lddsound_05min.map,cellsize05min.correct.map)"
+pcrcalc version: Sep 26 2013 (linux/x86_64)
+beek0120@speedy:~/PCR-GLOBWB$ aguila accu.map
+beek0120@speedy:~/PCR-GLOBWB$ pcrcalc outflowpoints.map= "if(accu.map gt 1e11,uniqueid(lddsound_05min.map eq 5),0)"
+pcrcalc version: Sep 26 2013 (linux/x86_64)
+beek0120@speedy:~/PCR-GLOBWB$ aguila outflowpoints.map
+beek0120@speedy:~/PCR-GLOBWB$ pcrcalc outflowpoints.map= "if(accu.map gt 1e12,uniqueid(lddsound_05min.map eq 5),0)"
+pcrcalc version: Sep 26 2013 (linux/x86_64)
+beek0120@speedy:~/PCR-GLOBWB$ aguila outflowpoints.map
+beek0120@speedy:~/PCR-GLOBWB$ pcrcalc catchments.map= "catchment(lddsound_05min.map,outflowpoints.map)"
+pcrcalc version: Sep 26 2013 (linux/x86_64)
+?:1:46:ERROR: outflowpoints.map: used as one of (nominal,ordinal,boolean) type, but has scalar type
+beek0120@speedy:~/PCR-GLOBWB$ pcrcalc catchments.map= "catchment(lddsound_05min.map,nominal(outflowpoints.map))"
+pcrcalc version: Sep 26 2013 (linux/x86_64)
+beek0120@speedy:~/PCR-GLOBWB$ aguila catchments.map
+beek0120@speedy:~/PCR-GLOBWB$ pcrcalc temp.map= "if(catchments.map eq 15735,boolean(1))"
+pcrcalc version: Sep 26 2013 (linux/x86_64)
+beek0120@speedy:~/PCR-GLOBWB$ resample -C temp.map clone_niger_05min.map
+resample version: Sep 26 2013 (linux/x86_64)
+beek0120@speedy:~/PCR-GLOBWB$ aguila clone_niger_05min.map
+beek0120@speedy:~/PCR-GLOBWB$ resample --clone clone_niger_05min.map accu.map
+resample version: Sep 26 2013 (linux/x86_64)
+ERROR: Not enough arguments
+beek0120@speedy:~/PCR-GLOBWB$ resample --clone clone_niger_05min.map accu.map accu_temp.map
+resample version: Sep 26 2013 (linux/x86_64)
+beek0120@speedy:~/PCR-GLOBWB$ aguila accu_temp.map
+^[qbeek0120@speedy:~/PCR-GLOBWB$ pcrcalc ldd_niger_05min.map= "lddcreate(-accu_temp.map,1e31,1e31,1e31,1e31)"
+pcrcalc version: Sep 26 2013 (linux/x86_64)
+beek0120@speedy:~/PCR-GLOBWB$ aguila ldd_niger_05min.map
+beek0120@speedy:~/PCR-GLOBWB$ aguila clone_niger_05min.map + ldd_niger_05min.map
+beek0120@speedy:~/PCR-GLOBWB$ pcrcalc catchment_niger_05min.map= "catchment(ldd_niger_05min.map,cover(clone_niger_05min.map,0))"
+pcrcalc version: Sep 26 2013 (linux/x86_64)
+beek0120@speedy:~/PCR-GLOBWB$ aguila catchment_niger_05min.map + ldd_niger_05min.map
